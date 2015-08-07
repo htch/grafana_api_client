@@ -78,6 +78,9 @@ class DeferredClientRequest(object):
     def patch(self, payload={}):
         return self.make_request("patch", payload)
 
+    def __repr__(self):
+        return "<grafana_api_client.DeferredClientRequest for '{0}'>".format("/".join(self.path_sections))
+
 AUTHENTICATE_WITH_API_KEY = type(str(""), (object,), {})
 AUTHENTICATE_WITH_LOGIN_CREDENTIALS = type(str(""), (object,), {})
 
@@ -166,7 +169,7 @@ class GrafanaClient(object):
         else:
             r = requests.request(method.upper(), url, json=payload, headers=headers, **self.custom_requests_params)
         if 500 <= r.status_code < 600:
-            raise GrafanaServerError("Server Error {0}: {1}".format(r.status_code, r.data))
+            raise GrafanaServerError("Server Error {0}: {1}".format(r.status_code, r.content.decode("ascii", "replace")))      # because who knows what else is broken about the server response
         elif r.status_code == 400:
             raise GrafanaBadInputError("Bad Input: `{0}`".format(r.text))
         elif r.status_code == 401:
@@ -178,7 +181,7 @@ class GrafanaClient(object):
             response_data = r.json()
             raise GrafanaPreconditionFailedError("Precondition failed: {status} (`{message}`)".format(**response_data))
         elif 400 <= r.status_code < 500:
-            raise GrafanaClientError("Client Error {0}: {1}".format(r.status_code, r.content.decode("ascii", "replace")))      # because who knows what else is broken about the server response
+            raise GrafanaClientError("Client Error {0}: {1}".format(r.status_code, r.text))
         return r.json()
 
     def __getattr__(self, path_section):
