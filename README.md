@@ -8,6 +8,6 @@ Usage:
     >>> client.org.replace(name="Your Org Ltd.")
         {"id":1,"name":"Your Org Ltd."}
     >>> client.dashboards.db.create(dashboard={...}, overwrite=False)
-        {"dashboard": {...}, "overwrite": false}
+        {"dashboard": {...}, "overwrite": False}
 
 Please refer to the [Grafana API Documentation](http://docs.grafana.org/reference/http_api/) for a list of available methods.
