@@ -63,19 +63,22 @@ class DeferredClientRequest(object):
         endpoint = "/".join(self.path_sections)
         return self.client.make_raw_request(method, endpoint, payload)
 
-    def get(self, payload={}):
+    def __call__(self, **payload):
+        return self.get(**payload)
+
+    def get(self, **payload):
         return self.make_request("get", payload)
 
-    def post(self, payload={}):
+    def create(self, **payload):
         return self.make_request("post", payload)
 
-    def delete(self, payload={}):
+    def delete(self, **payload):
         return self.make_request("delete", payload)
 
-    def put(self, payload={}):
+    def replace(self, **payload):
         return self.make_request("put", payload)
 
-    def patch(self, payload={}):
+    def update(self, **payload):
         return self.make_request("patch", payload)
 
     def __repr__(self):
@@ -95,7 +98,7 @@ class GrafanaClient(object):
         >>> client.org.get()
         {"id":1,"name":"Main Org."}
 
-        >>> client.dashboards.db.post({"dashboard": {...}, "overwrite": false})
+        >>> client.dashboards.db.post(dashboard={...}, overwrite=False)
         {"dashboard": {...}, "overwrite": false}
 
         :param authenticate_with: Authentication parameters, either string (api_key) or 2-ary tuple with login credentials (("login", "password"))

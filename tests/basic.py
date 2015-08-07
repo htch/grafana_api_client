@@ -30,6 +30,9 @@ class TestCase(unittest.TestCase):
         self.assertEquals(gc.a.b.c.get(), ("GET", "a/b/c"))
         self.assertEquals(gc.a.b["c"].get(), ("GET", "a/b/c"))
         self.assertEquals(gc.a.b[123].get(), ("GET", "a/b/123"))
+        self.assertEquals(gc.a.b[123](), ("GET", "a/b/123"))
+        self.assertEquals(gc.a.b[123].replace(), ("PUT", "a/b/123"))
+        self.assertEquals(gc.a.b[123].update(), ("PATCH", "a/b/123"))
 
 if __name__ == '__main__':
     unittest.main()
