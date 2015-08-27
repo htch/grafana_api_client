@@ -84,8 +84,17 @@ class DeferredClientRequest(object):
     def __repr__(self):
         return "<grafana_api_client.DeferredClientRequest for '{0}'>".format("/".join(self.path_sections))
 
-AUTHENTICATE_WITH_API_KEY = type(str(""), (object,), {})
-AUTHENTICATE_WITH_LOGIN_CREDENTIALS = type(str(""), (object,), {})
+
+class TokenAuth(requests.auth.AuthBase):
+    """Authentication using a Grafana API token."""
+    def __init__(self, token):
+        self.token = token
+
+    def __call__(self, request):
+        request.headers.update({
+            "Authorization": "Bearer {0}".format(self.token)
+        })
+        return request
 
 
 class GrafanaClient(object):
@@ -121,11 +130,12 @@ class GrafanaClient(object):
         self.url_path_prefix = url_path_prefix
 
         self.custom_requests_params = {}
-        
+
+        self.session = requests.Session()
         if isinstance(authenticate_with, basestring):
-            self.authenticate_with_api_key(authenticate_with)
+            self.session.auth = TokenAuth(authenticate_with)
         else:
-            self.authenticate_with_login_credentials(*authenticate_with)
+            self.session.auth = requests.auth.HTTPBasicAuth(*authenticate_with)
 
     def construct_api_url(self, endpoint):
         params = {
@@ -134,52 +144,29 @@ class GrafanaClient(object):
             "path_prefix": self.url_path_prefix,
             "endpoint": endpoint,
         }
-        if self.authentication_method == AUTHENTICATE_WITH_LOGIN_CREDENTIALS:
-            if self.url_port is None:
-                url_pattern = "{protocol}://{login}:{password}@{host}/{path_prefix}api/{endpoint}"
-            else:
-                params["port"] = self.url_port
-                url_pattern = "{protocol}://{login}:{password}@{host}:{port}/{path_prefix}api/{endpoint}"
-            params["login"] = self.login
-            params["password"] = self.password
-        elif self.authentication_method == AUTHENTICATE_WITH_API_KEY:
-            if self.url_port is None:
-                url_pattern = "{protocol}://{host}/{path_prefix}api/{endpoint}"
-            else:
-                params["port"] = self.url_port
-                url_pattern = "{protocol}://{host}:{port}/{path_prefix}api/{endpoint}"
+        if self.url_port is None:
+            url_pattern = "{protocol}://{host}/{path_prefix}api/{endpoint}"
+        else:
+            params["port"] = self.url_port
+            url_pattern = "{protocol}://{host}:{port}/{path_prefix}api/{endpoint}"
         return url_pattern.format(**params)
 
     def construct_headers(self):
-        headers = {"Accept": "application/json; charset=UTF-8"}
-        if self.authentication_method == AUTHENTICATE_WITH_API_KEY:
-            headers["Authorization"] = "Bearer {0}".format(self.api_key)
-        return headers
-
-    def authenticate_with_login_credentials(self, login, password):
-        self.authentication_method = AUTHENTICATE_WITH_LOGIN_CREDENTIALS
-        self.login, self.password = login, password
-
-    def authenticate_with_api_key(self, api_key):
-        self.authentication_method = AUTHENTICATE_WITH_API_KEY
-        self.api_key = api_key
+        return {"Accept": "application/json; charset=UTF-8"}
 
     def make_raw_request(self, method, endpoint, payload):
         url = self.construct_api_url(endpoint)
         headers = self.construct_headers()
         if method.upper() == "GET":
-            r = requests.request("GET", url, params=payload, headers=headers, **self.custom_requests_params)
+            r = self.session.request("GET", url, params=payload, headers=headers, **self.custom_requests_params)
         else:
-            r = requests.request(method.upper(), url, json=payload, headers=headers, **self.custom_requests_params)
+            r = self.session.request(method.upper(), url, json=payload, headers=headers, **self.custom_requests_params)
         if 500 <= r.status_code < 600:
             raise GrafanaServerError("Server Error {0}: {1}".format(r.status_code, r.content.decode("ascii", "replace")))      # because who knows what else is broken about the server response
         elif r.status_code == 400:
             raise GrafanaBadInputError("Bad Input: `{0}`".format(r.text))
         elif r.status_code == 401:
-            if self.authentication_method == AUTHENTICATE_WITH_LOGIN_CREDENTIALS:
-                raise GrafanaUnauthorizedError("Unauthorized (authorization with login credentials failed)")
-            else:
-                raise GrafanaUnauthorizedError("Unauthorized (authorization with api key failed)")
+            raise GrafanaUnauthorizedError('Unauthorized')
         elif r.status_code == 412:
             response_data = r.json()
             raise GrafanaPreconditionFailedError("Precondition failed: {status} (`{message}`)".format(**response_data))
@@ -195,7 +182,3 @@ class GrafanaClient(object):
 
     def __repr__(self):
         return "<GrafanaApiClient at '{0}'>".format(self.construct_api_url(""))
-
-
-GrafanaClient.AUTHENTICATE_WITH_API_KEY = AUTHENTICATE_WITH_API_KEY         # hiding these guys from the package namespace
-GrafanaClient.AUTHENTICATE_WITH_LOGIN_CREDENTIALS = AUTHENTICATE_WITH_LOGIN_CREDENTIALS
