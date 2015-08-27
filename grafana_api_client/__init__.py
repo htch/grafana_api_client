@@ -131,7 +131,11 @@ class GrafanaClient(object):
 
         self.custom_requests_params = {}
 
+        # Build up our session
         self.session = requests.Session()
+        self.session.headers = {
+            "Accept": "application/json; charset=UTF-8"
+        }
         if isinstance(authenticate_with, basestring):
             self.session.auth = TokenAuth(authenticate_with)
         else:
@@ -151,16 +155,12 @@ class GrafanaClient(object):
             url_pattern = "{protocol}://{host}:{port}/{path_prefix}api/{endpoint}"
         return url_pattern.format(**params)
 
-    def construct_headers(self):
-        return {"Accept": "application/json; charset=UTF-8"}
-
     def make_raw_request(self, method, endpoint, payload):
         url = self.construct_api_url(endpoint)
-        headers = self.construct_headers()
         if method.upper() == "GET":
-            r = self.session.request("GET", url, params=payload, headers=headers, **self.custom_requests_params)
+            r = self.session.request("GET", url, params=payload, **self.custom_requests_params)
         else:
-            r = self.session.request(method.upper(), url, json=payload, headers=headers, **self.custom_requests_params)
+            r = self.session.request(method.upper(), url, json=payload, **self.custom_requests_params)
         if 500 <= r.status_code < 600:
             raise GrafanaServerError("Server Error {0}: {1}".format(r.status_code, r.content.decode("ascii", "replace")))      # because who knows what else is broken about the server response
         elif r.status_code == 400:
