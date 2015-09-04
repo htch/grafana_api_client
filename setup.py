@@ -2,15 +2,37 @@
 
 from distutils.core import setup
 
+try:
+    with open('README.md') as f:
+        long_description = f.read()
+except IOError:
+    long_description = ""
+
 setup(name='grafana_api_client',
-    version='0.1.3',
+    version='0.1.4',
     url='https://github.com/htch/grafana_api_client',
     description='Grafana API wrapper/Very basic Grafana API client library.',
+    long_description=long_description,
     author='Pavel',
     author_email='htch.git@gmail.com',
+    keywords=['grafana'],
+    platform='any',
+    license='BSD',
     packages=["grafana_api_client"],
     requires=[
         "requests",
         "wsgiref",
+    ],
+    classifiers=[
+        'Development Status :: 3 - Alpha',
+        'Intended Audience :: Developers',
+        'Intended Audience :: System Administrators',
+        'License :: OSI Approved :: BSD License',
+        'Operating System :: OS Independent',
+        'Programming Language :: Python',
+        'Programming Language :: Python :: 2',
+        'Topic :: Software Development',
+        'Topic :: System',
+        'Topic :: Utilities',
     ]
 )
