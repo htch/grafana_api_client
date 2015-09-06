@@ -1,10 +1,11 @@
 Very basic Grafana API wrapper. Supports Grafana v2.1.0 
 
 Usage:
-    
+
+    >>> from grafana_api_client import GrafanaClient
     >>> client = GrafanaClient(("admin", "admin"), host="127.0.0.1", port=3000) # or, alternatively:
     >>> client = GrafanaClient("yourapikey", host="127.0.0.1", port=3000)
-    >>> client.org
+    >>> client.org()
         {"id":1,"name":"Main Org."}
     >>> client.org.replace(name="Your Org Ltd.")
         {"id":1,"name":"Your Org Ltd."}
