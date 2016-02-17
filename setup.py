@@ -21,7 +21,6 @@ setup(name='grafana_api_client',
     packages=["grafana_api_client"],
     requires=[
         "requests",
-        "wsgiref",
     ],
     classifiers=[
         'Development Status :: 3 - Alpha',
