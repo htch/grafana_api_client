@@ -1,6 +1,6 @@
 from __future__ import unicode_literals
-
 import requests
+import six
 
 __all__ = map(str, ["GrafanaException", "GrafanaServerError", "GrafanaClientError",
  "GrafanaBadInputError", "GrafanaUnauthorizedError", "GrafanaPreconditionFailedError",
@@ -56,10 +56,13 @@ class DeferredClientRequest(object):
         return self
 
     def __getitem__(self, path_section):
-        self.path_sections.append(unicode(path_section))
+        self.path_sections.append(str(path_section))
         return self
 
     def make_request(self, method, payload):
+        if self.path_sections and 'dashboards' in self.path_sections[0]:
+            self.path_sections[-1] = self.path_sections[-1].replace('_', '-')
+
         endpoint = "/".join(self.path_sections)
         return self.client.make_raw_request(method, endpoint, payload)
 
@@ -136,7 +139,7 @@ class GrafanaClient(object):
         self.session.headers = {
             "Accept": "application/json; charset=UTF-8"
         }
-        if isinstance(authenticate_with, basestring):
+        if isinstance(authenticate_with, six.string_types):
             self.session.auth = TokenAuth(authenticate_with)
         else:
             self.session.auth = requests.auth.HTTPBasicAuth(*authenticate_with)
