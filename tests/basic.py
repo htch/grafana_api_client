@@ -34,8 +34,6 @@ class TestCase(unittest.TestCase):
         self.assertEquals(gc.a.b[123](), ("GET", "a/b/123"))
         self.assertEquals(gc.a.b[123].replace(), ("PUT", "a/b/123"))
         self.assertEquals(gc.a.b[123].update(), ("PATCH", "a/b/123"))
-        self.assertEquals(gc.dashboards.db.c_d_e.get(), ("GET", "dashboards/db/c-d-e"))
-
 
 if __name__ == '__main__':
     unittest.main()

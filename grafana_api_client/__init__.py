@@ -1,4 +1,5 @@
 from __future__ import unicode_literals
+
 import requests
 import six
 
@@ -60,9 +61,6 @@ class DeferredClientRequest(object):
         return self
 
     def make_request(self, method, payload):
-        if self.path_sections and 'dashboards' in self.path_sections[0]:
-            self.path_sections[-1] = self.path_sections[-1].replace('_', '-')
-
         endpoint = "/".join(self.path_sections)
         return self.client.make_raw_request(method, endpoint, payload)
 
