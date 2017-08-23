@@ -1,0 +1,18 @@
+Source:  grafana-api-client
+Maintainer: George Shuklin <george.shuklin@gmail.com>
+Section: contrib/python
+Priority: optional
+Build-Depends: python-setuptools, python-all, debhelper, dh-python
+X-Python-Version: >= 2.7
+Standards-Version: 3.9.8
+Homepage: https://github.com/htch/grafana_api_client
+Vcs-Browser: https://github.com/htch/grafana_api_client
+
+Package: python-grafana-api-client
+Architecture: all
+Depends: ${misc:Depends}, ${python:Depends}, python-pkg-resources 
+Description: Very basic Grafana API wrapper
+ Supports Grafana v2.1.0
+ Please refer to the Grafana API Documentation
+ for a list of available methods.
+
