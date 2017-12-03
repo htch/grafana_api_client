@@ -1,0 +1,16 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: n42org/tox
+      - image: htch/grafana-defaults
+      - image: htch/grafana-noauth
+
+    working_directory: ~/repo
+
+    steps:
+      - checkout
+      - run:
+          name: run tests
+          command: |
+            tox -e ALL
