@@ -60,9 +60,6 @@ class DeferredClientRequest(object):
         return self
 
     def make_request(self, method, payload):
-        if self.path_sections and 'dashboards' in self.path_sections[0]:
-            self.path_sections[-1] = self.path_sections[-1].replace('_', '-')
-
         endpoint = "/".join(self.path_sections)
         return self.client.make_raw_request(method, endpoint, payload)
 
@@ -113,7 +110,7 @@ class GrafanaClient(object):
         >>> client.dashboards.db.post(dashboard={...}, overwrite=False)
         {"dashboard": {...}, "overwrite": false}
 
-        :param authenticate_with: Authentication parameters, either string (api_key) or 2-ary tuple with login credentials (("login", "password"))
+        :param authenticate_with: Authentication parameters, either string (api_key) or 2-ary tuple with login credentials (("login", "password")) or None (for grafana installations that allow anonymous access)
         :param host: Grafana instance hostname
         :type state: str.
         :param port: Grafana instance port
@@ -139,7 +136,9 @@ class GrafanaClient(object):
         self.session.headers = {
             "Accept": "application/json; charset=UTF-8"
         }
-        if isinstance(authenticate_with, six.string_types):
+        if authenticate_with is None:
+            pass
+        elif isinstance(authenticate_with, six.string_types):
             self.session.auth = TokenAuth(authenticate_with)
         else:
             self.session.auth = requests.auth.HTTPBasicAuth(*authenticate_with)

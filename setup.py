@@ -9,11 +9,10 @@ except IOError:
     long_description = ""
 
 setup(name='grafana_api_client',
-    version='0.1.4',
+    version='0.2.0',
     url='https://github.com/htch/grafana_api_client',
-    description='Grafana API wrapper/Very basic Grafana API client library.',
+    description='Grafana API wrapper/Basic Grafana API client library.',
     long_description=long_description,
-    author='Pavel',
     author_email='htch.git@gmail.com',
     keywords=['grafana'],
     platform='any',
